@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Egg Hunt 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',system-ui,sans-serif;background:#fdf6ec;min-height:100vh;color:#4a2c6e;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 0% 0%,#fde8f5 0%,transparent 50%),radial-gradient(ellipse at 100% 0%,#e8f5e9 0%,transparent 50%),radial-gradient(ellipse at 100% 100%,#fce4ec 0%,transparent 50%),radial-gradient(ellipse at 0% 100%,#e8eaf6 0%,transparent 50%);pointer-events:none;z-index:0}
+.deco-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.deco-bg span{position:absolute;opacity:.12;font-size:2rem;animation:float 8s ease-in-out infinite}
+.deco-bg span:nth-child(1){top:5%;left:3%;animation-delay:0s}.deco-bg span:nth-child(2){top:12%;left:88%;animation-delay:1s}.deco-bg span:nth-child(3){top:35%;left:95%;animation-delay:2s}.deco-bg span:nth-child(4){top:60%;left:2%;animation-delay:3s}.deco-bg span:nth-child(5){top:80%;left:90%;animation-delay:1.5s}.deco-bg span:nth-child(6){top:90%;left:15%;animation-delay:2.5s}.deco-bg span:nth-child(7){top:50%;left:50%;animation-delay:4s}.deco-bg span:nth-child(8){top:22%;left:45%;animation-delay:3.5s}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-14px) rotate(8deg)}}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:relative;z-index:1}
+.screen.active{display:flex}
+.easter-title{font-family:'Fredoka One',cursive;font-size:2.8rem;text-align:center;line-height:1.1;margin-bottom:4px;color:#c2185b;text-shadow:2px 2px 0 #f8bbd0,4px 4px 0 rgba(194,24,91,.15)}
+.easter-title .line2{color:#6a1b9a;text-shadow:2px 2px 0 #e1bee7,4px 4px 0 rgba(106,27,154,.15)}
+.subtitle{font-size:.95rem;color:#8d6e8a;margin-bottom:22px;text-align:center;font-weight:600}
+.panel{background:#fff;border:3px solid #f8bbd0;border-radius:24px;padding:26px;width:100%;max-width:440px;margin-bottom:14px;box-shadow:0 8px 32px rgba(194,24,91,.1),0 2px 0 #f8bbd0 inset}
+.panel-green{border-color:#a5d6a7;box-shadow:0 8px 32px rgba(76,175,80,.1),0 2px 0 #c8e6c9 inset}
+.panel-purple{border-color:#ce93d8;box-shadow:0 8px 32px rgba(106,27,154,.1),0 2px 0 #e1bee7 inset}
+input{width:100%;padding:12px 16px;border-radius:14px;border:2.5px solid #f8bbd0;background:#fff9fc;color:#4a2c6e;font-size:1rem;margin-bottom:12px;outline:none;font-family:'Nunito',sans-serif;font-weight:600;transition:border .2s}
+input::placeholder{color:#ce93d8;font-weight:400}
+input:focus{border-color:#ce93d8;background:#fdf0ff}
+button{width:100%;padding:13px;border-radius:50px;border:none;font-size:1rem;font-weight:800;cursor:pointer;transition:all .18s;font-family:'Nunito',sans-serif;letter-spacing:.3px}
+.btn-primary{background:linear-gradient(135deg,#f06292,#ce93d8);color:#fff;box-shadow:0 4px 0 #ad1457,0 6px 18px rgba(240,98,146,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 0 #ad1457,0 10px 24px rgba(240,98,146,.4)}
+.btn-primary:active{transform:translateY(2px);box-shadow:0 2px 0 #ad1457}
+.btn-green{background:linear-gradient(135deg,#66bb6a,#26a69a);color:#fff;box-shadow:0 4px 0 #2e7d32,0 6px 18px rgba(102,187,106,.35);margin-top:10px}
+.btn-green:hover{transform:translateY(-2px)}
+.btn-outline{background:#fff;color:#c2185b;border:2.5px solid #f48fb1;box-shadow:none;margin-top:8px}
+.btn-outline:hover{background:#fce4ec}
+.lvl-badge{display:inline-block;padding:4px 14px;border-radius:50px;font-size:.78rem;font-weight:800;font-family:'Fredoka One',cursive;letter-spacing:.5px}
+.level-1{background:#e8f5e9;color:#2e7d32;border:2px solid #a5d6a7}
+.level-2{background:#fff8e1;color:#f57f17;border:2px solid #ffe082}
+#game-wrap{width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center}
+.hud-row{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.hud-pill{text-align:center;background:#fff;border:2.5px solid #f8bbd0;border-radius:50px;padding:5px 16px;min-width:72px}
+.hud-pill span{display:block;font-size:.65rem;color:#b06090;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.hud-pill strong{font-size:1.05rem;color:#6a1b9a;font-weight:800}
+.hud-pill.green-pill{border-color:#a5d6a7}.hud-pill.green-pill strong{color:#2e7d32}
+.hud-pill.red-pill{border-color:#f48fb1}.hud-pill.red-pill strong{color:#c62828}
+#timer-wrap{width:100%;background:#fce4ec;border-radius:50px;height:12px;margin-bottom:10px;overflow:hidden;border:2px solid #f8bbd0}
+#timer-bar{height:100%;border-radius:50px;background:linear-gradient(90deg,#66bb6a,#f06292);transition:width .8s linear}
+.game-msg{text-align:center;font-size:.92rem;color:#c2185b;min-height:24px;margin-bottom:8px;font-weight:700}
+#grid-wrap{width:100%;display:flex;justify-content:center}
+#card-grid{display:grid;gap:6px}
+.card-cell{perspective:700px;cursor:pointer}
+.card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .38s cubic-bezier(.4,0,.2,1)}
+.card-cell.flipped .card-inner,.card-cell.matched .card-inner{transform:rotateY(180deg)}
+.card-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:14px;display:flex;align-items:center;justify-content:center;}
+.card-back{background:linear-gradient(135deg,#f48fb1 0%,#ce93d8 50%,#90caf9 100%);border:3px solid rgba(255,255,255,.5);box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.egg-deco{position:absolute;width:62%;height:78%;border-radius:50% 50% 48% 48%;background:rgba(255,255,255,.25);top:10%}
+.card-front{background:#fff;border:3px solid #f8bbd0;transform:rotateY(180deg);box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.card-cell.matched .card-face.card-front{background:#f1f8e9;border-color:#a5d6a7;box-shadow:0 0 0 3px #66bb6a40}
+.card-cell.wrong-flash .card-face.card-front{background:#fce4ec;border-color:#f48fb1}
+@keyframes matched-pop{0%{transform:rotateY(180deg) scale(1)}40%{transform:rotateY(180deg) scale(1.18)}100%{transform:rotateY(180deg) scale(1)}}
+.card-cell.matched .card-inner{animation:matched-pop .35s ease .38s both}
+.lb-entry{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:16px;background:#fdf6f9;border:2px solid #fce4ec;margin-bottom:8px}
+.lb-rank{font-size:1.1rem;min-width:32px;text-align:center}
+.lb-name{flex:1;font-weight:700;font-size:.92rem;color:#4a2c6e}
+.lb-score{color:#c2185b;font-weight:800;font-size:1rem}
+.lb-detail{font-size:.7rem;color:#b06090;min-width:54px;text-align:right;line-height:1.4}
+.divider{width:100%;height:3px;border-radius:50px;background:linear-gradient(90deg,#f06292,#ce93d8,#90caf9);margin:12px 0;opacity:.4}
+#confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;overflow:hidden}
+.cp{position:absolute;border-radius:50%;animation:fall linear forwards}
+@keyframes fall{from{transform:translateY(-20px) rotate(0deg);opacity:1}to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.grass-strip{width:100%;text-align:center;font-size:1.6rem;letter-spacing:-4px;margin:6px 0;line-height:1;opacity:.55;user-select:none}
+.big-score{font-family:'Fredoka One',cursive;font-size:3rem;color:#c2185b;line-height:1}
+#err-msg{color:#c62828;font-size:.85rem;background:#fce4ec;border:2px solid #f48fb1;border-radius:12px;padding:8px 14px;margin-top:4px;display:none;font-weight:600}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid #f8bbd0;border-top-color:#f06292;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{text-align:center;padding:20px;color:#b06090;font-weight:700;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="deco-bg"><span>🌸</span><span>🌷</span><span>🌼</span><span>🐇</span><span>🌸</span><span>🌺</span><span>🦋</span><span>🌼</span></div>
+<div id="confetti-wrap"></div>
+
+<!-- START -->
+<div id="screen-start" class="screen active">
+  <div class="grass-strip">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+  <h1 class="easter-title">🐣 Egg Hunt<br><span class="line2">2026</span></h1>
+  <p class="subtitle">Encontra todos os pares de ovos nas cartas!</p>
+  <div class="panel">
+    <p style="color:#b06090;font-size:.88rem;margin-bottom:10px;font-weight:700">✨ Introduz o teu nome para jogar:</p>
+    <input id="name-input" type="text" placeholder="O teu nome..." maxlength="20">
+    <button class="btn-primary" id="btn-play" onclick="tryStart()">🐣 Jogar agora!</button>
+    <button class="btn-outline" onclick="showLB()">🏆 Ver Leaderboard</button>
+  </div>
+  <div id="err-msg">🚫 Este nome já participou! Cada jogador joga apenas uma vez.</div>
+  <div class="grass-strip" style="transform:scaleY(-1)">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen" style="padding:10px;justify-content:flex-start;padding-top:14px">
+  <div id="game-wrap">
+    <div class="hud-row" style="margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="lvl-badge" id="lvl-badge">Nível 1</span>
+        <span id="lvl-desc" style="font-size:.75rem;color:#b06090;font-weight:700"></span>
+      </div>
+      <div style="font-size:.82rem;color:#b06090;font-weight:700">🐰 <span id="hud-name" style="color:#6a1b9a"></span></div>
+    </div>
+    <div id="timer-wrap"><div id="timer-bar"></div></div>
+    <div class="hud-row">
+      <div class="hud-pill"><span>Pontos</span><strong id="hud-score">0</strong></div>
+      <div class="hud-pill green-pill"><span>Pares</span><strong id="hud-pairs">0/0</strong></div>
+      <div class="hud-pill"><span>Tempo</span><strong id="hud-time">0s</strong></div>
+      <div class="hud-pill red-pill"><span>Erros</span><strong id="hud-errors">0</strong></div>
+    </div>
+    <div class="game-msg" id="game-msg">🌷 Vira as cartas e encontra os pares!</div>
+    <div id="grid-wrap"><div id="card-grid"></div></div>
+  </div>
+</div>
+
+<!-- LEVEL UP -->
+<div id="screen-levelup" class="screen">
+  <div class="grass-strip">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+  <h1 class="easter-title" id="lu-title">Nível Completo!</h1>
+  <p class="subtitle" id="lu-sub"></p>
+  <div class="panel panel-green" style="text-align:center;max-width:400px">
+    <div style="font-size:3.5rem;margin-bottom:6px">🎉</div>
+    <p style="color:#6a8f6a;font-size:.85rem;font-weight:700;margin-bottom:4px">Pontuação acumulada</p>
+    <div class="big-score" id="lu-score" style="color:#2e7d32"></div>
+    <div class="divider"></div>
+    <p style="color:#8d6e8a;font-size:.82rem;margin-bottom:18px;font-weight:600" id="lu-tip"></p>
+    <button class="btn-green" onclick="nextLevel()">🐣 Próximo Nível →</button>
+  </div>
+  <div class="grass-strip" style="transform:scaleY(-1)">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+</div>
+
+<!-- END -->
+<div id="screen-end" class="screen">
+  <div class="grass-strip">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+  <h1 class="easter-title" id="end-title">Parabéns!</h1>
+  <p class="subtitle" id="end-sub"></p>
+  <div class="panel" style="text-align:center;max-width:400px">
+    <div style="font-size:4rem;margin-bottom:6px" id="end-emoji">🏆</div>
+    <p style="color:#b06090;font-size:.85rem;font-weight:700;margin-bottom:4px">Pontuação final</p>
+    <div class="big-score" id="end-score"></div>
+    <div class="divider"></div>
+    <p style="color:#8d6e8a;font-size:.82rem;margin-bottom:18px;font-weight:600" id="end-detail"></p>
+    <button class="btn-primary" onclick="showLB()">🏆 Ver Leaderboard</button>
+    <button class="btn-outline" onclick="goHome()">← Voltar ao início</button>
+  </div>
+  <div class="grass-strip" style="transform:scaleY(-1)">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="screen-lb" class="screen">
+  <div class="grass-strip">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+  <h1 class="easter-title">🏆 Leaderboard</h1>
+  <p class="subtitle">Os melhores caçadores de ovos de 2026</p>
+  <div class="panel panel-purple" style="width:100%;max-width:480px">
+    <div id="lb-list"><div class="loading-state"><span class="spinner"></span>A carregar...</div></div>
+  </div>
+  <button class="btn-outline" style="max-width:480px;width:100%;margin-top:8px" onclick="goHome()">← Voltar</button>
+  <div class="grass-strip" style="transform:scaleY(-1)">🌿🌱🌿🌱🌿🌱🌿🌱🌿🌱🌿</div>
+</div>
+
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB2IL2iYHFegqIIZKFp76EzNA0M4wjYBsg",
+  authDomain: "egg-hunt-2026.firebaseapp.com",
+  projectId: "egg-hunt-2026",
+  storageBucket: "egg-hunt-2026.firebasestorage.app",
+  messagingSenderId: "3725585265",
+  appId: "1:3725585265:web:9631e4c3eac3706083e4d0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const ALL_EGGS=['🥚','🐣','🐥','🌸','🌈','⭐','💎','🔮','🦋','🌺','🍀','🌙','☀️','🎀','🍭','🎠','🦄','🐇'];
+const LEVELS=[
+  {n:1,label:'Nível 1',badge:'level-1',desc:'Fácil — 4×4 (8 pares)',cols:4,rows:4,time:90,tip:'A seguir: grelha 6×6 com 18 pares!'},
+  {n:2,label:'Nível 2',badge:'level-2',desc:'Médio — 6×6 (18 pares)',cols:6,rows:6,time:150,tip:''}
+];
+
+let G={player:'',pkey:'',level:0,score:0,errors:0,matched:0,total:0,cards:[],flipped:[],lock:false,timer:null,timeLeft:0};
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function goHome(){stopTimer();show('screen-start');document.getElementById('err-msg').style.display='none';document.getElementById('name-input').value='';}
+window.goHome=goHome;
+window.nextLevel=()=>{G.level++;loadLevel();};
+window.showLB=showLB;
+
+// ── FIREBASE HELPERS ─────────────────────────────────────────
+async function playerExists(key){
+  try{const snap=await getDoc(doc(db,'players',key));return snap.exists();}
+  catch{return false;}
+}
+
+async function saveResult(won){
+  const entry={name:G.player,score:G.score,level:G.level+1,won,errors:G.errors,date:new Date().toLocaleDateString('pt-PT'),ts:Date.now()};
+  try{await setDoc(doc(db,'players',G.pkey),entry);}
+  catch(e){console.error('Error saving:',e);}
+}
+
+async function fetchBoard(){
+  try{
+    const q=query(collection(db,'players'),orderBy('score','desc'));
+    const snap=await getDocs(q);
+    return snap.docs.map(d=>d.data());
+  }catch(e){console.error('Error fetching board:',e);return[];}
+}
+
+// ── GAME LOGIC ───────────────────────────────────────────────
+window.tryStart = async function(){
+  const name=document.getElementById('name-input').value.trim();
+  if(!name){alert('Introduz o teu nome!');return;}
+  const key=name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  const btn=document.getElementById('btn-play');
+  btn.innerHTML='<span class="spinner"></span>A verificar...';btn.disabled=true;
+  const exists=await playerExists(key);
+  btn.innerHTML='🐣 Jogar agora!';btn.disabled=false;
+  if(exists){document.getElementById('err-msg').style.display='block';return;}
+  document.getElementById('err-msg').style.display='none';
+  G.player=name;G.pkey=key;G.level=0;G.score=0;G.errors=0;
+  loadLevel();
+};
+
+function loadLevel(){
+  stopTimer();
+  const lvl=LEVELS[G.level];
+  const pairs=(lvl.cols*lvl.rows)/2;
+  const syms=ALL_EGGS.slice(0,pairs);
+  let deck=[...syms,...syms];
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  G.cards=deck.map((sym,i)=>({id:i,sym,flipped:false,matched:false}));
+  G.flipped=[];G.lock=false;G.matched=0;G.total=pairs;G.timeLeft=lvl.time;
+  document.getElementById('lvl-badge').className='lvl-badge '+lvl.badge;
+  document.getElementById('lvl-badge').textContent=lvl.label;
+  document.getElementById('lvl-desc').textContent=lvl.desc;
+  document.getElementById('hud-name').textContent=G.player;
+  document.getElementById('hud-score').textContent=G.score;
+  document.getElementById('hud-time').textContent=lvl.time+'s';
+  document.getElementById('hud-pairs').textContent='0/'+pairs;
+  document.getElementById('hud-errors').textContent=G.errors;
+  document.getElementById('game-msg').textContent='🌷 Vira as cartas e encontra os pares!';
+  buildGrid(lvl,deck);
+  show('screen-game');
+  startTimer(lvl);
+}
+
+function buildGrid(lvl,deck){
+  const grid=document.getElementById('card-grid');
+  grid.innerHTML='';
+  const vw=Math.min(window.innerWidth,720)-24;
+  const gap=6;
+  const cellSize=Math.min(Math.floor((vw-gap*(lvl.cols-1))/lvl.cols),76);
+  grid.style.gridTemplateColumns=`repeat(${lvl.cols},${cellSize}px)`;
+  grid.style.gap=gap+'px';
+  deck.forEach((sym,i)=>{
+    const cell=document.createElement('div');
+    cell.className='card-cell';
+    cell.style.width=cellSize+'px';
+    cell.style.height=Math.round(cellSize*1.1)+'px';
+    cell.innerHTML=`<div class="card-inner"><div class="card-face card-back"><div class="egg-deco"></div><span style="font-size:${Math.round(cellSize*.3)}px;position:relative;z-index:1">🥚</span></div><div class="card-face card-front" style="font-size:${Math.round(cellSize*.42)}px">${sym}</div></div>`;
+    cell.addEventListener('click',()=>flipCard(i,cell));
+    grid.appendChild(cell);
+  });
+}
+
+function flipCard(i,el){
+  if(G.lock||G.cards[i].flipped||G.cards[i].matched||G.flipped.length>=2)return;
+  G.cards[i].flipped=true;el.classList.add('flipped');G.flipped.push({i,el});
+  if(G.flipped.length===2)checkPair();
+}
+
+function checkPair(){
+  G.lock=true;
+  const[a,b]=G.flipped;
+  if(G.cards[a.i].sym===G.cards[b.i].sym){
+    const bonus=Math.max(5,Math.ceil(G.timeLeft/4));
+    G.score+=bonus;G.matched++;
+    G.cards[a.i].matched=true;G.cards[b.i].matched=true;
+    a.el.classList.add('matched');b.el.classList.add('matched');
+    a.el.classList.remove('flipped');b.el.classList.remove('flipped');
+    document.getElementById('hud-score').textContent=G.score;
+    document.getElementById('hud-pairs').textContent=G.matched+'/'+G.total;
+    document.getElementById('game-msg').textContent='🎉 Par encontrado! +'+bonus+' pts';
+    G.flipped=[];G.lock=false;
+    if(G.matched===G.total)setTimeout(levelDone,450);
+  }else{
+    G.errors++;
+    document.getElementById('hud-errors').textContent=G.errors;
+    document.getElementById('game-msg').textContent='🐰 Não é par... tenta de novo!';
+    a.el.classList.add('wrong-flash');b.el.classList.add('wrong-flash');
+    setTimeout(()=>{
+      a.el.classList.remove('flipped','wrong-flash');b.el.classList.remove('flipped','wrong-flash');
+      G.cards[a.i].flipped=false;G.cards[b.i].flipped=false;
+      G.flipped=[];G.lock=false;
+    },900);
+  }
+}
+
+function startTimer(lvl){
+  const bar=document.getElementById('timer-bar');
+  const timeEl=document.getElementById('hud-time');
+  bar.style.width='100%';bar.style.background='linear-gradient(90deg,#66bb6a,#f06292)';
+  G.timer=setInterval(()=>{
+    G.timeLeft--;timeEl.textContent=G.timeLeft+'s';
+    const pct=(G.timeLeft/lvl.time)*100;
+    bar.style.width=pct+'%';
+    if(pct<25)bar.style.background='linear-gradient(90deg,#e53935,#f06292)';
+    if(G.timeLeft<=0){stopTimer();endGame(false,'⏰ O tempo acabou!');}
+  },1000);
+}
+function stopTimer(){if(G.timer){clearInterval(G.timer);G.timer=null;}}
+
+async function levelDone(){
+  stopTimer();
+  if(G.level>=LEVELS.length-1){
+    launchConfetti();
+    await saveResult(true);
+    document.getElementById('end-title').textContent='Parabéns, '+G.player+'!';
+    document.getElementById('end-sub').textContent='Completaste os 2 níveis do Egg Hunt 2026! 🐣';
+    document.getElementById('end-emoji').textContent='🏆';
+    document.getElementById('end-score').textContent=G.score+' pts';
+    document.getElementById('end-detail').textContent='Erros totais: '+G.errors+' | Caçador lendário de ovos!';
+    show('screen-end');
+  }else{
+    const lvl=LEVELS[G.level];
+    document.getElementById('lu-title').textContent='Nível '+lvl.n+' Completo! 🌸';
+    document.getElementById('lu-sub').textContent='Fantástico, '+G.player+'!';
+    document.getElementById('lu-score').textContent=G.score+' pts';
+    document.getElementById('lu-tip').textContent=lvl.tip;
+    show('screen-levelup');
+  }
+}
+
+async function endGame(won,reason){
+  stopTimer();
+  await saveResult(won);
+  document.getElementById('end-title').textContent=won?'Parabéns!':'Fim de Jogo!';
+  document.getElementById('end-sub').textContent=reason||'';
+  document.getElementById('end-emoji').textContent=won?'🏆':'🥚';
+  document.getElementById('end-score').textContent=G.score+' pts';
+  document.getElementById('end-detail').textContent='Nível '+(G.level+1)+' | Erros: '+G.errors;
+  show('screen-end');
+}
+
+async function showLB(){
+  show('screen-lb');
+  document.getElementById('lb-list').innerHTML='<div class="loading-state"><span class="spinner"></span>A carregar leaderboard...</div>';
+  const board=await fetchBoard();
+  const list=document.getElementById('lb-list');
+  if(!board||board.length===0){
+    list.innerHTML='<p style="color:#b06090;text-align:center;padding:20px;font-weight:700">🐣 Ainda ninguém jogou. Sê o primeiro!</p>';
+  }else{
+    list.innerHTML=board.map((p,i)=>{
+      const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+      const w=p.won?'<span style="color:#2e7d32;font-size:.72rem;font-weight:700"> ✓ Completo</span>':'<span style="color:#b06090;font-size:.72rem;font-weight:600"> Nível '+p.level+'</span>';
+      return `<div class="lb-entry"><div class="lb-rank">${m}</div><div class="lb-name">${p.name}${w}</div><div class="lb-score">${p.score} pts</div><div class="lb-detail">${p.errors||0} erros<br>${p.date||''}</div></div>`;
+    }).join('');
+  }
+}
+
+function launchConfetti(){
+  const wrap=document.getElementById('confetti-wrap');
+  const colors=['#f06292','#ce93d8','#66bb6a','#ffd54f','#4fc3f7','#ff8a65','#fff'];
+  for(let i=0;i<120;i++){
+    const p=document.createElement('div');p.className='cp';
+    const sz=6+Math.random()*10;
+    p.style.cssText=`left:${Math.random()*100}%;background:${colors[i%colors.length]};width:${sz}px;height:${sz}px;animation-duration:${1.8+Math.random()*2.5}s;animation-delay:${Math.random()*.8}s`;
+    wrap.appendChild(p);setTimeout(()=>p.remove(),5000);
+  }
+}
+
+document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryStart();});
+window.addEventListener('resize',()=>{
+  if(document.getElementById('screen-game').classList.contains('active')){
+    buildGrid(LEVELS[G.level],G.cards.map(c=>c.sym));
+    G.cards.forEach((c,idx)=>{
+      const el=document.getElementById('card-grid').children[idx];
+      if(!el)return;
+      if(c.matched)el.classList.add('matched');
+      else if(c.flipped)el.classList.add('flipped');
+    });
+  }
+});
+</script>
+</body>
+</html>
